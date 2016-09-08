@@ -1,0 +1,112 @@
+<html>
+<head>
+  <title>Apple Pay for the Web Demo</title>
+
+  <!-- (Optional) Disable the favicon.ico requests -->
+  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+
+  <!-- Import External Dependencies -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+  <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+
+  <!-- Import Apple Button Style -->
+  <link rel="stylesheet" type="text/css" href="/static/style.css" />
+
+  <!-- Stripe Configuration -->
+  <script>
+    Stripe.setPublishableKey('{{ STRIPE_PUBLISHABLE_KEY }}');
+  </script>
+
+  <!-- Apple Pay Event Handlers and Setup Script -->
+  <script>
+  $(document).ready(function () {
+
+    // Unhide Apple Pay button if supported
+    Stripe.applePay.checkAvailability(function(available) {
+        $('#apple-pay-button').toggle(!!available);
+    });
+
+    // Add an event listener to the Apple Pay button
+    $('#apple-pay-button').on('click', processApplePayCharge);
+
+  });
+  </script>
+
+  <script>
+    function processApplePayCharge() {
+
+      var paymentRequest = {
+        countryCode: 'US',
+        currencyCode: 'USD',
+        total: {
+          label: 'Stripe.com',
+          amount: '19.99'
+        }
+      };
+
+      var session = Stripe.applePay.buildSession(paymentRequest, function(result, completion) {
+
+        $("#tokenResponse").text(JSON.stringify(result, null, '\t'));
+
+        createCharge(paymentRequest, result, completion);
+
+      }, function(error) {
+
+        // Tokenization failed
+        console.log("Unable to tokenize Card in Stripe.");
+        console.log(error.message);
+
+      });
+
+      session.begin();
+    }
+
+    function createCharge(paymentRequest, result, completion) {
+
+      /*
+      This section of code communicates with the backend endpoint that was
+      built at `/charge`.  It submits a request containing the token id and
+      the amount to be charged, then expects either a 200 or > 400 response.
+      */
+
+      /*
+      NOTE: Passing the amount to the /charge endpoint is somewhat insecure for
+      products that have a static price.  This model is really only appropriate
+      for donation pages.
+      */
+
+      // Process charge in backend
+      $.post("/charge", {
+        "token": result.token.id,
+        "amount": paymentRequest.total.amount
+      })
+      .done(function(response) {
+
+        // Successfully processed transaction
+        console.log("Successfully created Charge in Stripe.");
+        $("#chargeResponse").text(JSON.stringify(response, null, '\t'));
+        completion(true);
+
+      })
+      .fail(function (response) {
+
+        // Failure to create charge
+        console.log("Unable to create Charge in Stripe.");
+        completion(false);
+
+      });
+    }
+
+  </script>
+
+</head>
+<body>
+  <button id="apple-pay-button"></button><br /><br />
+
+  Token Response:<br />
+  <pre id="tokenResponse"></pre><br /><br/>
+
+  Charge Response:<br />
+  <pre id="chargeResponse"></pre><br />
+</body>
+</html>
