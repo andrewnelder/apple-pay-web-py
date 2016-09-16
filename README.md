@@ -3,6 +3,12 @@
 
 This demo requires that (ngrok)[https://ngrok.io/] be installed or that you have some means of accessing the local web service from an iOS 10+ device.  This is a demonstration only and absolutely should *NOT* be used in a production environment (as Flask is set to run in debug-mode for auto-reload).
 
+### Step #0: Install the Requirements via PIP
+
+```
+pip install -r requirements.txt
+```
+
 ### Step #1: Turn on your Python web server (listening on localhost:5000)
 
 Replace the keys below and run the following command in your terminal.
