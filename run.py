@@ -1,6 +1,6 @@
 import os
 import stripe
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, Response
 
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
@@ -15,15 +15,36 @@ def index():
         "STRIPE_PUBLISHABLE_KEY": STRIPE_PUBLISHABLE_KEY
     })
 
+@app.route("/.well-known/apple-developer-merchantid-domain-association")
+def verify():
+    with open('static/apple-developer-merchantid-domain-association') as fo:
+        return Response(fo.read(), mimetype="text/plain")
+    return ""
 
 @app.route("/charge", methods=["POST"])
 def charge():
     token = request.form.get("token")
-    amount = int(request.form.get("amount") * 100)  # convert to int for Stripe
+    amount = int(float(request.form.get("amount")) * 100)  # convert to int for Stripe
     if not token or not amount:
         return "ERROR", 400
-    ch = stripe.Charge.create(amount=amount, source=token, currency="usd")
-    return jsonify(ch)
+
+    # Create Customer
+    cus = stripe.Customer.create(
+        description="Apple Pay for the Web Test",
+        source=token,
+        email="test@test.test",
+        metadata={
+            "token": token,
+        }
+    )
+
+    # Create Charge
+    ch = stripe.Charge.create(
+        amount=amount,
+        customer=cus.id,
+        currency="usd"
+    )
+    return jsonify({'charge': ch, 'customer': cus})
 
 if __name__ == "__main__":
 
