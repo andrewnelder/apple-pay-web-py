@@ -36,6 +36,8 @@
     function processApplePayCharge() {
 
       var paymentRequest = {
+        requiredBillingContactFields: ['postalAddress'],
+        requiredShippingContactFields: ['email', 'phone'],
         countryCode: 'US',
         currencyCode: 'USD',
         total: {
