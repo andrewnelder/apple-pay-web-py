@@ -1,7 +1,7 @@
 
 ## Run the demo
 
-This demo requires that (ngrok)[https://ngrok.io/] be installed or that you have some means of accessing the local web service from an iOS 10+ device.  This is a demonstration only and absolutely should *NOT* be used in a production environment (as Flask is set to run in debug-mode for auto-reload).
+This demo requires that [ngrok](https://ngrok.io/) be installed or that you have some means of accessing the local web service from an iOS 10+ device.  This is a demonstration only and absolutely should *NOT* be used in a production environment (as Flask is set to run in debug-mode for auto-reload).
 
 ### Step #0: Install the Requirements via PIP
 
