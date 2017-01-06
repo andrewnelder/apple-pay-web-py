@@ -1,9 +1,10 @@
 import os
 import stripe
-from flask import Flask, render_template, jsonify, request, Response
+from flask import Flask, render_template, jsonify, request, Response, g
 
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
+URL = os.environ.get("URL", None)
 
 app = Flask(__name__)
 stripe.api_key = STRIPE_SECRET_KEY
@@ -11,6 +12,7 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 @app.route("/")
 def index():
+    register_heroku_domain()
     return render_template("index.html", **{
         "STRIPE_PUBLISHABLE_KEY": STRIPE_PUBLISHABLE_KEY
     })
@@ -45,6 +47,21 @@ def charge():
         currency="usd"
     )
     return jsonify({'charge': ch, 'customer': cus})
+
+
+# HEROKU DOMAIN REGISTRATION #
+
+g.apftw_verified = False if URL else True
+def register_heroku_domain():
+    if not g.apftw_verified:
+        try:
+            stripe.ApplePayDomain.create(domain_name=URL)
+            g.apftw_verified = True
+        except Exception as e:
+            pass
+
+# END HEROKU DOMAIN REGISTRATION #
+
 
 if __name__ == "__main__":
 
