@@ -5,6 +5,7 @@ from flask import Flask, render_template, jsonify, request, Response, g
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
 URL = os.environ.get("URL", None)
+VERIFIED = True if not URL else False
 
 app = Flask(__name__)
 stripe.api_key = STRIPE_SECRET_KEY
@@ -51,13 +52,12 @@ def charge():
 
 # HEROKU DOMAIN REGISTRATION #
 
-g.apftw_verified = False if URL else True
 def register_heroku_domain():
-    if not g.apftw_verified:
+    if not VERIFIED:
         print "Attempting to register <{}>...".format(URL)
         try:
             stripe.ApplePayDomain.create(domain_name=URL)
-            g.apftw_verified = True
+            VERIFIED = True
         except Exception as e:
             pass
 
