@@ -57,6 +57,7 @@ def register_heroku_domain(domain):
         print "Attempting to register <{}>...".format(domain)
         try:
             stripe.ApplePayDomain.create(domain_name=domain)
+            print "Successful registration!"
         except Exception as e:
             pass
     VERIFIED = True
