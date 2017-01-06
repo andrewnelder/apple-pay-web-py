@@ -53,6 +53,7 @@ def charge():
 # HEROKU DOMAIN REGISTRATION #
 
 def register_heroku_domain():
+    global VERIFIED
     if not VERIFIED:
         print "Attempting to register <{}>...".format(URL)
         try:
