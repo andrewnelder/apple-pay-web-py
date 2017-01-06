@@ -54,6 +54,7 @@ def charge():
 g.apftw_verified = False if URL else True
 def register_heroku_domain():
     if not g.apftw_verified:
+        print "Attempting to register <{}>...".format(URL)
         try:
             stripe.ApplePayDomain.create(domain_name=URL)
             g.apftw_verified = True
