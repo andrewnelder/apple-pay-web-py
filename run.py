@@ -12,7 +12,7 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 @app.route("/")
 def index():
-    register_heroku_domain(request.host.split(':')[0])
+    register_domain(request.host.split(':')[0])
     return render_template("index.html", **{
         "STRIPE_PUBLISHABLE_KEY": STRIPE_PUBLISHABLE_KEY
     })
@@ -49,9 +49,9 @@ def charge():
     return jsonify({'charge': ch, 'customer': cus})
 
 
-# HEROKU DOMAIN REGISTRATION #
+# DOMAIN REGISTRATION #
 
-def register_heroku_domain(domain):
+def register_domain(domain):
     global VERIFIED
     if not VERIFIED:
         print "Attempting to register <{}>...".format(domain)
@@ -62,7 +62,7 @@ def register_heroku_domain(domain):
             pass
     VERIFIED = True
 
-# END HEROKU DOMAIN REGISTRATION #
+# END DOMAIN REGISTRATION #
 
 
 if __name__ == "__main__":
