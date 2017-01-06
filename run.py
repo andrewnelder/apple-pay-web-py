@@ -1,11 +1,10 @@
 import os
 import stripe
-from flask import Flask, render_template, jsonify, request, Response, g
+from flask import Flask, render_template, jsonify, request, Response
 
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
-URL = os.environ.get("URL", None)
-VERIFIED = True if not URL else False
+VERIFIED = False
 
 app = Flask(__name__)
 stripe.api_key = STRIPE_SECRET_KEY
@@ -13,7 +12,7 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 @app.route("/")
 def index():
-    register_heroku_domain()
+    register_heroku_domain(request.host.split(':')[0])
     return render_template("index.html", **{
         "STRIPE_PUBLISHABLE_KEY": STRIPE_PUBLISHABLE_KEY
     })
@@ -52,15 +51,15 @@ def charge():
 
 # HEROKU DOMAIN REGISTRATION #
 
-def register_heroku_domain():
+def register_heroku_domain(domain):
     global VERIFIED
     if not VERIFIED:
-        print "Attempting to register <{}>...".format(URL)
+        print "Attempting to register <{}>...".format(domain)
         try:
-            stripe.ApplePayDomain.create(domain_name=URL)
-            VERIFIED = True
+            stripe.ApplePayDomain.create(domain_name=domain)
         except Exception as e:
             pass
+    VERIFIED = True
 
 # END HEROKU DOMAIN REGISTRATION #
 
