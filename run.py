@@ -90,4 +90,4 @@ if __name__ == "__main__":
         raise ValueError("Please pass the `STRIPE_PUBLISHABLE_KEY` envionment variable.")
 
     app.wsgi_app = LoggingMiddleware(app.wsgi_app)
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
