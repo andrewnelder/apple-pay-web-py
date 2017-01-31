@@ -1,5 +1,6 @@
 import os
 import stripe
+import pprint
 from flask import Flask, render_template, jsonify, request, Response
 
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
@@ -10,9 +11,24 @@ app = Flask(__name__)
 stripe.api_key = STRIPE_SECRET_KEY
 
 
+class LoggingMiddleware(object):
+    def __init__(self, app):
+        self._app = app
+
+    def __call__(self, environ, resp):
+        errorlog = environ['wsgi.errors']
+        pprint.pprint(('REQUEST', environ), stream=errorlog)
+
+        def log_response(status, headers, *args):
+            pprint.pprint(('RESPONSE', status, headers), stream=errorlog)
+            return resp(status, headers, *args)
+
+        return self._app(environ, log_response)
+
+
 @app.route("/")
 def index():
-    register_domain(request.host.split(':')[0])
+    # register_domain(request.host.split(':')[0])
     return render_template("index.html", **{
         "STRIPE_PUBLISHABLE_KEY": STRIPE_PUBLISHABLE_KEY
     })
@@ -51,16 +67,16 @@ def charge():
 
 # DOMAIN REGISTRATION #
 
-def register_domain(domain):
-    global VERIFIED
-    if not VERIFIED:
-        print "Attempting to register <{}>...".format(domain)
-        try:
-            stripe.ApplePayDomain.create(domain_name=domain)
-            print "Successful registration!"
-        except Exception as e:
-            pass
-    VERIFIED = True
+# def register_domain(domain):
+#     global VERIFIED
+#     if not VERIFIED:
+#         print "Attempting to register <{}>...".format(domain)
+#         try:
+#             stripe.ApplePayDomain.create(domain_name=domain)
+#             print "Successful registration!"
+#         except Exception as e:
+#             pass
+#     VERIFIED = True
 
 # END DOMAIN REGISTRATION #
 
@@ -73,4 +89,5 @@ if __name__ == "__main__":
     if not STRIPE_PUBLISHABLE_KEY:
         raise ValueError("Please pass the `STRIPE_PUBLISHABLE_KEY` envionment variable.")
 
+    app.wsgi_app = LoggingMiddleware(app.wsgi_app)
     app.run(debug=True)
